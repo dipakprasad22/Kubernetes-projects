@@ -1,0 +1,62 @@
+{{- range $name, $svc := .Values.services }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Values.global.namespace }}
+  labels: { app: {{ $name }} }
+spec:
+  replicas: {{ $svc.replicas }}
+  selector: { matchLabels: { app: {{ $name }} } }
+  strategy: { type: RollingUpdate, rollingUpdate: { maxUnavailable: 0, maxSurge: 1 } }
+  template:
+    metadata: { labels: { app: {{ $name }} } }
+    spec:
+      containers:
+        - name: {{ $name }}
+          image: "{{ $.Values.global.imageRegistry }}/{{ $name }}:{{ $.Values.global.imageTag }}"
+          ports: [{ containerPort: {{ $svc.port }} }]
+          envFrom: [{ configMapRef: { name: shopkart-config } }]
+          env:
+            - { name: PORT, value: "{{ $svc.port }}" }
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: shopkart-secrets, key: DB_PASSWORD } }
+            {{- if $svc.dbName }}
+            - { name: DB_NAME, value: "{{ $svc.dbName }}" }
+            {{- end }}
+          readinessProbe: { httpGet: { path: /ready, port: {{ $svc.port }} }, initialDelaySeconds: 5, periodSeconds: 5 }
+          livenessProbe: { httpGet: { path: /health, port: {{ $svc.port }} }, initialDelaySeconds: 10, periodSeconds: 10 }
+          resources:
+            requests: { cpu: {{ $.Values.resources.requests.cpu | quote }}, memory: {{ $.Values.resources.requests.memory | quote }} }
+            limits: { cpu: {{ $.Values.resources.limits.cpu | quote }}, memory: {{ $.Values.resources.limits.memory | quote }} }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+      securityContext: { runAsNonRoot: true, runAsUser: 65532 }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: {{ $name }}, namespace: {{ $.Values.global.namespace }} }
+spec:
+  selector: { app: {{ $name }} }
+  ports:
+    {{- if eq $name "gateway" }}
+    - { port: {{ $svc.port }}, targetPort: {{ $svc.port }} }
+    {{- else }}
+    - { port: 80, targetPort: {{ $svc.port }} }
+    {{- end }}
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: {{ $name }}, namespace: {{ $.Values.global.namespace }} }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: {{ $name }} }
+  minReplicas: {{ $svc.minReplicas }}
+  maxReplicas: {{ $svc.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: {{ $.Values.hpaTargetCPU }} } }
+---
+{{- end }}

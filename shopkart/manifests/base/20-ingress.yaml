@@ -1,0 +1,21 @@
+# One Ingress, path-based routing to web (UI) and gateway (API) —
+# the K3 single-entry-point consolidation. On KIND: nginx ingress controller.
+# On EKS: the AWS Load Balancer Controller turns this into an ALB (see eks overlay).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shopkart
+  namespace: shopkart
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend: { service: { name: gateway, port: { number: 8080 } } }
+          - path: /()(.*)
+            pathType: ImplementationSpecific
+            backend: { service: { name: web, port: { number: 80 } } }

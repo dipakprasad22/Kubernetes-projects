@@ -1,0 +1,62 @@
+# Postgres as a StatefulSet (stable identity + per-pod PVC) for LOCAL/KIND use.
+# On EKS, replace this with RDS (keep the cluster stateless) — see manifests/eks.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: shopkart
+spec:
+  clusterIP: None          # headless service for the StatefulSet
+  selector: { app: postgres }
+  ports: [{ port: 5432, targetPort: 5432 }]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: shopkart
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector: { matchLabels: { app: postgres } }
+  template:
+    metadata: { labels: { app: postgres } }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports: [{ containerPort: 5432 }]
+          env:
+            - { name: POSTGRES_USER, value: "shopkart" }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: shopkart-secrets, key: DB_PASSWORD } }
+            - { name: POSTGRES_DB, value: "catalog" }
+          # create the other databases on first init
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/postgresql/data }
+            - { name: init, mountPath: /docker-entrypoint-initdb.d }
+          readinessProbe:
+            exec: { command: ["pg_isready", "-U", "shopkart"] }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests: { cpu: "100m", memory: "256Mi" }
+            limits: { cpu: "500m", memory: "512Mi" }
+      volumes:
+        - name: init
+          configMap: { name: postgres-init }
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: { requests: { storage: 1Gi } }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: shopkart
+data:
+  init.sql: |
+    CREATE DATABASE orders;
+    CREATE DATABASE users;

@@ -1,0 +1,7 @@
+{
+  "name": "shopkart-web",
+  "version": "1.0.0",
+  "description": "ShopKart storefront frontend/BFF",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" }
+}

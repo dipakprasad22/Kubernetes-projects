@@ -1,0 +1,24 @@
+# EKS version of the Ingress — provisions a real ALB via the AWS Load Balancer
+# Controller. Replaces manifests/base/20-ingress.yaml on EKS.
+# target-type: ip because the VPC CNI gives pods real VPC IPs.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shopkart
+  namespace: shopkart
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    # alb.ingress.kubernetes.io/certificate-arn: <ACM cert ARN for TLS>
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend: { service: { name: gateway, port: { number: 8080 } } }
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: web, port: { number: 80 } } }

@@ -1,0 +1,29 @@
+# Non-sensitive config shared by services (DB hosts, ports, service URLs).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shopkart-config
+  namespace: shopkart
+data:
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_USER: "shopkart"
+  DB_SSLMODE: "disable"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  CATALOG_URL: "http://catalog"
+  CART_URL: "http://cart"
+  ORDERS_URL: "http://orders"
+  USERS_URL: "http://users"
+  GATEWAY_URL: "http://gateway:8080"
+---
+# Sensitive values. NOTE: base64 is NOT encryption — on EKS enable etcd
+# encryption-at-rest (KMS) and/or source from Secrets Manager via IRSA.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: shopkart-secrets
+  namespace: shopkart
+type: Opaque
+stringData:
+  DB_PASSWORD: "shopkart_dev_password"   # dev only; real secret injected per-env

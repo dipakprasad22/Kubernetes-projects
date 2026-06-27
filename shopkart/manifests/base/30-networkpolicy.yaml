@@ -1,0 +1,45 @@
+# Default-deny all ingress in the namespace, then allowlist only needed flows.
+# Needs an enforcing CNI (Calico/Cilium); the default KIND CNI ignores these.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny-ingress, namespace: shopkart }
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+---
+# Postgres accepts connections only from the services that use it.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: postgres-allow, namespace: shopkart }
+spec:
+  podSelector: { matchLabels: { app: postgres } }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: { matchLabels: { app: catalog } }
+        - podSelector: { matchLabels: { app: orders } }
+        - podSelector: { matchLabels: { app: users } }
+      ports: [{ protocol: TCP, port: 5432 }]
+---
+# Redis accepts connections only from cart.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: redis-allow, namespace: shopkart }
+spec:
+  podSelector: { matchLabels: { app: redis } }
+  policyTypes: [Ingress]
+  ingress:
+    - from: [{ podSelector: { matchLabels: { app: cart } } }]
+      ports: [{ protocol: TCP, port: 6379 }]
+---
+# Backend services accept traffic only from the gateway; gateway from web/ingress.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: backends-allow-gateway, namespace: shopkart }
+spec:
+  podSelector:
+    matchExpressions:
+      - { key: app, operator: In, values: [catalog, cart, orders, users] }
+  policyTypes: [Ingress]
+  ingress:
+    - from: [{ podSelector: { matchLabels: { app: gateway } } }]

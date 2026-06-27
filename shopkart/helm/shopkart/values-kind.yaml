@@ -1,0 +1,8 @@
+# KIND overrides: local images, in-cluster data tier, nginx ingress.
+global:
+  imageRegistry: "shopkart"
+ingress:
+  className: nginx
+  alb: false
+datatier:
+  inCluster: true

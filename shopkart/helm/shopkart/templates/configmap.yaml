@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shopkart-config
+  namespace: {{ .Values.global.namespace }}
+data:
+{{- range $k, $v := .Values.config }}
+  {{ $k }}: {{ $v | quote }}
+{{- end }}
+  GATEWAY_URL: "http://gateway:{{ .Values.services.gateway.port }}"
+  CATALOG_URL: "http://catalog"
+  CART_URL: "http://cart"
+  ORDERS_URL: "http://orders"
+  USERS_URL: "http://users"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: shopkart-secrets
+  namespace: {{ .Values.global.namespace }}
+type: Opaque
+stringData:
+  DB_PASSWORD: {{ .Values.secrets.DB_PASSWORD | quote }}
