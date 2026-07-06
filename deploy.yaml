@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: taskhub
+  name: taskhub
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: taskhub
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: taskhub
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: {}
+status: {}

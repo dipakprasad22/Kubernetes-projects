@@ -6,16 +6,25 @@ kind: Ingress
 metadata:
   name: shopkart
   namespace: shopkart
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+
 spec:
   ingressClassName: nginx
+
   rules:
-    - http:
-        paths:
-          - path: /api(/|$)(.*)
-            pathType: ImplementationSpecific
-            backend: { service: { name: gateway, port: { number: 8080 } } }
-          - path: /()(.*)
-            pathType: ImplementationSpecific
-            backend: { service: { name: web, port: { number: 80 } } }
+  - http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: gateway
+            port:
+              number: 8080
+
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: web
+            port:
+              number: 80

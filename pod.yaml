@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: taskhub-pod
+  labels:
+    app: taskhub
+spec:
+  containers:
+    - name: taskhub
+      image: nginx          # use nginx as a stand-in now; your real image in K2
+      ports:
+        - containerPort: 80
