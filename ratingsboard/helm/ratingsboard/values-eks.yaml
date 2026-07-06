@@ -1,0 +1,6 @@
+global:
+  imageRegistry: "<ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com"
+config:
+  DB_HOST: "<rds-endpoint>.rds.amazonaws.com"
+infra: { inCluster: false }
+ingress: { className: alb }

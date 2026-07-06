@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata: { name: rating-calc, namespace: ratingsboard }
+spec:
+  schedule: "30 * * * *"          # hourly at :30, after PanelPulse aggregation (:15)
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 600
+      template:
+        spec:
+          restartPolicy: Never
+          securityContext: { runAsNonRoot: true, runAsUser: 1001, seccompProfile: { type: RuntimeDefault } }
+          containers:
+            - name: rating-calc
+              image: ratingsboard/rating-calc:1.0
+              envFrom: [{ configMapRef: { name: ratingsboard-config } }]
+              env:
+                - name: DB_PASSWORD
+                  valueFrom: { secretKeyRef: { name: ratingsboard-secrets, key: DB_PASSWORD } }
+                - name: SRC_DB_PASSWORD
+                  valueFrom: { secretKeyRef: { name: ratingsboard-secrets, key: DB_PASSWORD } }
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: { drop: ["ALL"] }
+              resources:
+                requests: { cpu: "100m", memory: "128Mi" }
+                limits: { cpu: "500m", memory: "256Mi" }

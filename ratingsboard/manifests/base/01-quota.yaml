@@ -1,0 +1,22 @@
+# Per-namespace caps (ResourceQuota) so this tenant can't starve the cluster.
+apiVersion: v1
+kind: ResourceQuota
+metadata: { name: ratingsboard-quota, namespace: ratingsboard }
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    pods: "30"
+    count/cronjobs.batch: "5"
+---
+# Per-pod defaults (LimitRange) so pods without explicit requests/limits get sane ones.
+apiVersion: v1
+kind: LimitRange
+metadata: { name: ratingsboard-defaults, namespace: ratingsboard }
+spec:
+  limits:
+    - type: Container
+      default: { cpu: 300m, memory: 256Mi }
+      defaultRequest: { cpu: 100m, memory: 128Mi }

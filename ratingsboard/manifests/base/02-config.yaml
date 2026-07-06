@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: ratingsboard-config, namespace: ratingsboard }
+data:
+  DB_HOST: "reports-db"
+  DB_PORT: "5432"
+  DB_NAME: "ratingsboard"
+  DB_USER: "ratingsboard"
+  PANEL_UNIVERSE: "10000"
+  SRC_DB_HOST: "panelpulse-results-db.panelpulse.svc.cluster.local"
+  SRC_DB_NAME: "panelpulse"
+  SRC_DB_USER: "panelpulse"
+  REPORTING_API_URL: "http://reporting-api:8000"
+---
+apiVersion: v1
+kind: Secret
+metadata: { name: ratingsboard-secrets, namespace: ratingsboard }
+type: Opaque
+stringData:
+  DB_PASSWORD: "ratingsboard_dev_password"   # Secrets Manager on EKS

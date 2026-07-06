@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata: { name: reports-db, namespace: ratingsboard }
+spec:
+  clusterIP: None
+  selector: { app: reports-db }
+  ports: [{ port: 5432, targetPort: 5432 }]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: { name: reports-db, namespace: ratingsboard }
+spec:
+  serviceName: reports-db
+  replicas: 1
+  selector: { matchLabels: { app: reports-db } }
+  template:
+    metadata: { labels: { app: reports-db } }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports: [{ containerPort: 5432 }]
+          env:
+            - { name: POSTGRES_USER, value: "ratingsboard" }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: ratingsboard-secrets, key: DB_PASSWORD } }
+            - { name: POSTGRES_DB, value: "ratingsboard" }
+          readinessProbe:
+            exec: { command: ["pg_isready", "-U", "ratingsboard"] }
+            periodSeconds: 5
+          resources:
+            requests: { cpu: "100m", memory: "256Mi" }
+            limits: { cpu: "500m", memory: "512Mi" }
+          volumeMounts: [{ name: data, mountPath: /var/lib/postgresql/data }]
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: { requests: { storage: 1Gi } }

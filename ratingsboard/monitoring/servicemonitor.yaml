@@ -1,0 +1,14 @@
+# Tells the Prometheus Operator to scrape the reporting-api Service.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: reporting-api
+  namespace: ratingsboard
+  labels: { release: kube-prom }     # match the prometheus-stack's serviceMonitorSelector
+spec:
+  selector:
+    matchLabels: { app: reporting-api }
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

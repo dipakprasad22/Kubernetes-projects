@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: dashboard, namespace: ratingsboard, labels: { app: dashboard } }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: dashboard } }
+  strategy: { type: RollingUpdate, rollingUpdate: { maxUnavailable: 0, maxSurge: 1 } }
+  template:
+    metadata: { labels: { app: dashboard } }
+    spec:
+      securityContext: { runAsNonRoot: true, seccompProfile: { type: RuntimeDefault } }
+      containers:
+        - name: dashboard
+          image: ratingsboard/dashboard:1.0
+          ports: [{ containerPort: 3000 }]
+          envFrom: [{ configMapRef: { name: ratingsboard-config } }]
+          readinessProbe: { httpGet: { path: /readyz, port: 3000 }, periodSeconds: 5 }
+          livenessProbe: { httpGet: { path: /healthz, port: 3000 }, periodSeconds: 10 }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+          resources:
+            requests: { cpu: "50m", memory: "64Mi" }
+            limits: { cpu: "200m", memory: "128Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: dashboard, namespace: ratingsboard }
+spec:
+  selector: { app: dashboard }
+  ports: [{ port: 80, targetPort: 3000 }]

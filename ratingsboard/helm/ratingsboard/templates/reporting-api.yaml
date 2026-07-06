@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reporting-api
+  namespace: {{ .Values.global.namespace }}
+  labels: { app: reporting-api }
+spec:
+  replicas: {{ .Values.reportingApi.replicas }}
+  selector: { matchLabels: { app: reporting-api } }
+  strategy: { type: RollingUpdate, rollingUpdate: { maxUnavailable: 0, maxSurge: 1 } }
+  template:
+    metadata:
+      labels: { app: reporting-api }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext: { runAsNonRoot: true, runAsUser: 1001, seccompProfile: { type: RuntimeDefault } }
+      containers:
+        - name: reporting-api
+          image: "{{ .Values.global.imageRegistry }}/reporting-api:{{ .Values.global.imageTag }}"
+          ports: [{ containerPort: 8000 }]
+          envFrom: [{ configMapRef: { name: ratingsboard-config } }]
+          env:
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: ratingsboard-secrets, key: DB_PASSWORD } }
+          readinessProbe: { httpGet: { path: /readyz, port: 8000 }, periodSeconds: 5 }
+          livenessProbe: { httpGet: { path: /healthz, port: 8000 }, periodSeconds: 10 }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "500m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: reporting-api, namespace: {{ .Values.global.namespace }}, labels: { app: reporting-api } }
+spec:
+  selector: { app: reporting-api }
+  ports: [{ port: 8000, targetPort: 8000, name: http }]
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: reporting-api, namespace: {{ .Values.global.namespace }} }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: reporting-api }
+  minReplicas: {{ .Values.reportingApi.minReplicas }}
+  maxReplicas: {{ .Values.reportingApi.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 65 } }

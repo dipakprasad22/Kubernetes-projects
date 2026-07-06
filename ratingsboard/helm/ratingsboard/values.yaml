@@ -1,0 +1,23 @@
+global:
+  namespace: ratingsboard
+  imageRegistry: "ratingsboard"
+  imageTag: "1.0"
+config:
+  DB_HOST: "reports-db"
+  DB_PORT: "5432"
+  DB_NAME: "ratingsboard"
+  DB_USER: "ratingsboard"
+  PANEL_UNIVERSE: "10000"
+  REPORTING_API_URL: "http://reporting-api:8000"
+secrets:
+  DB_PASSWORD: "ratingsboard_dev_password"
+reportingApi: { replicas: 2, minReplicas: 2, maxReplicas: 6 }
+dashboard: { replicas: 2 }
+ratingCalc: { schedule: "30 * * * *" }
+quota:
+  enabled: true
+  requestsCpu: "2"
+  requestsMemory: 4Gi
+infra: { inCluster: true }   # false on EKS (RDS)
+ingress: { className: nginx }
+monitoring: { serviceMonitor: true }

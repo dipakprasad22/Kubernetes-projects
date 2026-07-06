@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="580" viewBox="0 0 680 580" font-family="system-ui,Arial" font-size="12">
+<style>.b{fill:#fff;stroke-width:1.2}.t{text-anchor:middle}.h{font-weight:600}.s{font-size:10}</style>
+<rect width="680" height="580" fill="#fafafa"/>
+<text x="340" y="24" class="t h" font-size="15">RatingsBoard — Media-Measurement Reporting &amp; Dashboards</text>
+<rect class="b" x="190" y="40" width="300" height="40" rx="9" stroke="#1aa1a1"/><text x="340" y="57" class="t h">PanelPulse (P3) → measurement_aggregates</text><text x="340" y="72" class="t s">impressions · viewing minutes · reach</text>
+<rect class="b" x="60" y="100" width="230" height="46" rx="8" stroke="#7a5bd0"/><text x="175" y="119" class="t h">rating-calc (Python)</text><text x="175" y="136" class="t s">CronJob · ratings &amp; share</text>
+<rect class="b" x="390" y="100" width="230" height="46" rx="8" stroke="#3b7dd8"/><text x="505" y="119" class="t h">Reports DB (Postgres)</text><text x="505" y="136" class="t s">StatefulSet / RDS</text>
+<line x1="290" y1="80" x2="200" y2="98" stroke="#888"/><line x1="290" y1="123" x2="388" y2="123" stroke="#888"/>
+<rect class="b" x="190" y="166" width="300" height="46" rx="8" stroke="#d86b5b"/><text x="340" y="185" class="t h">Reporting API (Python/FastAPI)</text><text x="340" y="202" class="t s">serves ratings · /metrics (RED)</text>
+<line x1="505" y1="146" x2="400" y2="164" stroke="#888"/>
+<rect class="b" x="230" y="232" width="220" height="42" rx="8" stroke="#2a9d5c"/><text x="340" y="250" class="t h">Dashboard (Node)</text><text x="340" y="266" class="t s">visualizes ratings</text>
+<line x1="340" y1="212" x2="340" y2="230" stroke="#888"/>
+<rect class="b" x="250" y="290" width="180" height="30" rx="7" stroke="#e0a020"/><text x="340" y="309" class="t">Ingress (ALB on EKS)</text>
+<line x1="340" y1="274" x2="340" y2="288" stroke="#888"/>
+<rect class="b" x="40" y="344" width="180" height="44" rx="8" stroke="#d86b5b"/><text x="130" y="362" class="t h">Prometheus</text><text x="130" y="379" class="t s">scrapes /metrics</text>
+<rect class="b" x="250" y="344" width="180" height="44" rx="8" stroke="#1aa1a1"/><text x="340" y="362" class="t h">Grafana</text><text x="340" y="379" class="t s">RED dashboards</text>
+<rect class="b" x="460" y="344" width="180" height="44" rx="8" stroke="#7a5bd0"/><text x="550" y="362" class="t h">ResourceQuota</text><text x="550" y="379" class="t s">+ LimitRange</text>
+<line x1="250" y1="189" x2="135" y2="342" stroke="#bbb"/><text x="180" y="270" class="s" fill="#888">scrape</text>
+<rect class="b" x="40" y="408" width="600" height="156" rx="8" stroke="#aaa"/>
+<text x="56" y="430" class="h">Observability + operations (the finale)</text>
+<text x="56" y="452" class="s" font-size="11">Closes the loop: consumes P3 aggregates → computes ratings → serves &amp; visualizes (end-to-end system)</text>
+<text x="56" y="472" class="s" font-size="11">Reporting API exposes Prometheus /metrics (RED: rate, errors, duration) → Prometheus → Grafana</text>
+<text x="56" y="492" class="s" font-size="11">Alert on the SYMPTOM (error rate > 5%), not the cause · ServiceMonitor + PrometheusRule</text>
+<text x="56" y="512" class="s" font-size="11">Scheduled rating-calc CronJob · Helm packaging · ResourceQuota + LimitRange multi-tenancy</text>
+<text x="56" y="532" class="s" font-size="11">Generic public measurement concepts · original fictional design · pairs with P3 PanelPulse</text>
+<text x="56" y="552" class="s" font-size="11">P3 + P4 = ingest → process → report, the full media-measurement lifecycle</text>
+</svg>

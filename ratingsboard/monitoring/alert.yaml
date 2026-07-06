@@ -1,0 +1,20 @@
+# Alert on the SYMPTOM: sustained high error rate on the reporting API.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: ratingsboard-alerts
+  namespace: ratingsboard
+  labels: { release: kube-prom }
+spec:
+  groups:
+    - name: ratingsboard.rules
+      rules:
+        - alert: ReportingApiHighErrorRate
+          expr: |
+            sum(rate(http_requests_total{status=~"5..",path=~"/api/.*"}[5m]))
+              / sum(rate(http_requests_total{path=~"/api/.*"}[5m])) > 0.05
+          for: 5m
+          labels: { severity: warning }
+          annotations:
+            summary: "RatingsBoard reporting API error rate > 5%"
+            description: "More than 5% of API requests are failing for 5 minutes."
