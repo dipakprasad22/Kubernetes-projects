@@ -3,15 +3,24 @@ kind: Ingress
 metadata:
   name: ratingsboard
   namespace: ratingsboard
-  annotations: { nginx.ingress.kubernetes.io/rewrite-target: /$2 }
+
 spec:
   ingressClassName: nginx
   rules:
     - http:
         paths:
-          - path: /api(/|$)(.*)
-            pathType: ImplementationSpecific
-            backend: { service: { name: reporting-api, port: { number: 8000 } } }
-          - path: /()(.*)
-            pathType: ImplementationSpecific
-            backend: { service: { name: dashboard, port: { number: 80 } } }
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: reporting-api
+                port:
+                  number: 8000
+
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dashboard
+                port:
+                  number: 80

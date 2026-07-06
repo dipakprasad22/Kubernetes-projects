@@ -7,9 +7,9 @@ data:
   DB_NAME: "ratingsboard"
   DB_USER: "ratingsboard"
   PANEL_UNIVERSE: "10000"
-  SRC_DB_HOST: "panelpulse-results-db.panelpulse.svc.cluster.local"
-  SRC_DB_NAME: "panelpulse"
-  SRC_DB_USER: "panelpulse"
+  SRC_DB_HOST: "reports-db"
+  SRC_DB_NAME: "ratingsboard"
+  SRC_DB_USER: "ratingsboard"
   REPORTING_API_URL: "http://reporting-api:8000"
 ---
 apiVersion: v1

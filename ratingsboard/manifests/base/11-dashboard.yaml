@@ -8,7 +8,7 @@ spec:
   template:
     metadata: { labels: { app: dashboard } }
     spec:
-      securityContext: { runAsNonRoot: true, seccompProfile: { type: RuntimeDefault } }
+      securityContext: { runAsNonRoot: true, runAsUser: 1000, seccompProfile: { type: RuntimeDefault } }
       containers:
         - name: dashboard
           image: ratingsboard/dashboard:1.0
