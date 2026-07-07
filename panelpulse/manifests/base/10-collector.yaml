@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collector
+  namespace: panelpulse
+  labels: { app: collector, tier: ingest }
+spec:
+  replicas: 3
+  selector: { matchLabels: { app: collector } }
+  strategy: { type: RollingUpdate, rollingUpdate: { maxUnavailable: 0, maxSurge: 2 } }
+  template:
+    metadata: { labels: { app: collector, tier: ingest } }
+    spec:
+      securityContext: { runAsNonRoot: true, runAsUser: 65532, seccompProfile: { type: RuntimeDefault } }
+      containers:
+        - name: collector
+          image: panelpulse/collector:1.0
+          ports: [{ containerPort: 8080 }]
+          envFrom: [{ configMapRef: { name: panelpulse-config } }]
+          readinessProbe: { httpGet: { path: /ready, port: 8080 }, initialDelaySeconds: 3, periodSeconds: 5 }
+          livenessProbe: { httpGet: { path: /health, port: 8080 }, initialDelaySeconds: 10, periodSeconds: 10 }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          resources:
+            requests: { cpu: "100m", memory: "64Mi" }   # lightweight Go
+            limits: { cpu: "500m", memory: "128Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: collector, namespace: panelpulse }
+spec:
+  selector: { app: collector }
+  ports: [{ port: 80, targetPort: 8080 }]
+---
+# Collectors scale on CPU — ingest load is CPU/throughput bound.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: collector, namespace: panelpulse }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: collector }
+  minReplicas: 3
+  maxReplicas: 20          # ingest spikes can be large
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 60 } }
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0       # react fast to ingest spikes
+      policies: [{ type: Percent, value: 100, periodSeconds: 15 }]

@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: processor
+  namespace: panelpulse
+  labels: { app: processor, tier: process }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: processor } }
+  template:
+    metadata: { labels: { app: processor, tier: process } }
+    spec:
+      securityContext: { runAsNonRoot: true, runAsUser: 1001, seccompProfile: { type: RuntimeDefault } }
+      containers:
+        - name: processor
+          image: panelpulse/processor:1.0
+          ports: [{ containerPort: 8080 }]     # actuator only
+          envFrom: [{ configMapRef: { name: panelpulse-config } }]
+          env:
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: panelpulse-secrets, key: DB_PASSWORD } }
+          startupProbe: { httpGet: { path: /actuator/health, port: 8080 }, failureThreshold: 30, periodSeconds: 5 }
+          readinessProbe: { httpGet: { path: /actuator/health, port: 8080 }, periodSeconds: 5 }
+          livenessProbe: { httpGet: { path: /actuator/health, port: 8080 }, periodSeconds: 10 }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          volumeMounts: [{ name: tmp, mountPath: /tmp }]
+          resources:
+            requests: { cpu: "250m", memory: "512Mi" }
+            limits: { cpu: "1", memory: "1Gi" }
+      volumes: [{ name: tmp, emptyDir: {} }]
+---
+apiVersion: v1
+kind: Service
+metadata: { name: processor, namespace: panelpulse }
+spec:
+  selector: { app: processor }
+  ports: [{ port: 80, targetPort: 8080 }]
+---
+# Processors ideally scale on KAFKA CONSUMER LAG (how far behind they are) — the
+# correct signal for a stream pipeline. That needs an external metrics adapter
+# (e.g. KEDA with a Kafka scaler, or prometheus-adapter exposing lag). Shown:
+# the KEDA ScaledObject pattern (commented) + a CPU HPA as the portable fallback.
+#
+# --- KEDA (preferred for lag-based scaling) ---
+# apiVersion: keda.sh/v1alpha1
+# kind: ScaledObject
+# metadata: { name: processor, namespace: panelpulse }
+# spec:
+#   scaleTargetRef: { name: processor }
+#   minReplicaCount: 2
+#   maxReplicaCount: 15
+#   triggers:
+#     - type: kafka
+#       metadata:
+#         bootstrapServers: kafka:9092
+#         consumerGroup: panelpulse-processors
+#         topic: exposure-events
+#         lagThreshold: "1000"      # add a replica per ~1000 messages of lag
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: processor, namespace: panelpulse }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: processor }
+  minReplicas: 2
+  maxReplicas: 15
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }

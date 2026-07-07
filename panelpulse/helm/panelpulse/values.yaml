@@ -1,0 +1,32 @@
+global:
+  namespace: panelpulse
+  imageRegistry: "panelpulse"     # ECR on EKS
+  imageTag: "1.0"
+
+config:
+  KAFKA_BOOTSTRAP: "kafka:9092"
+  KAFKA_TOPIC: "exposure-events"
+  CONSUMER_GROUP: "panelpulse-processors"
+  DB_HOST: "results-db"
+  DB_PORT: "5432"
+  DB_NAME: "panelpulse"
+  DB_USER: "panelpulse"
+secrets:
+  DB_PASSWORD: "panelpulse_dev_password"   # Secrets Manager on EKS
+
+collector:
+  replicas: 3
+  minReplicas: 3
+  maxReplicas: 20
+processor:
+  replicas: 2
+  minReplicas: 2
+  maxReplicas: 15
+  lagBasedScaling: false     # true on EKS with KEDA
+aggregator:
+  schedule: "15 * * * *"
+
+infra:
+  inCluster: true            # false on EKS → MSK + RDS
+ingress:
+  className: nginx           # alb on EKS

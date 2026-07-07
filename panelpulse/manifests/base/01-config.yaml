@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: panelpulse-config, namespace: panelpulse }
+data:
+  KAFKA_BOOTSTRAP: "kafka:9092"
+  KAFKA_TOPIC: "exposure-events"
+  DB_HOST: "results-db"
+  DB_PORT: "5432"
+  DB_NAME: "panelpulse"
+  DB_USER: "panelpulse"
+---
+apiVersion: v1
+kind: Secret
+metadata: { name: panelpulse-secrets, namespace: panelpulse }
+type: Opaque
+stringData:
+  DB_PASSWORD: "panelpulse_dev_password"   # dev only; Secrets Manager + IRSA on EKS

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="600" viewBox="0 0 680 600" font-family="system-ui,Arial" font-size="12">
+<style>.b{fill:#fff;stroke-width:1.2}.t{text-anchor:middle}.h{font-weight:600}.s{font-size:10}</style>
+<rect width="680" height="600" fill="#fafafa"/>
+<text x="340" y="24" class="t h" font-size="15">PanelPulse — Media-Measurement Ingest &amp; Processing Pipeline</text>
+<rect class="b" x="210" y="40" width="260" height="38" rx="8" stroke="#2a9d5c"/><text x="340" y="56" class="t h">Panel meters / devices</text><text x="340" y="71" class="t s">exposure events</text>
+<rect class="b" x="250" y="92" width="180" height="30" rx="6" stroke="#e0a020"/><text x="340" y="111" class="t">Ingress (ALB on EKS)</text>
+<line x1="340" y1="78" x2="340" y2="90" stroke="#888"/>
+<rect class="b" x="220" y="136" width="240" height="46" rx="8" stroke="#3b7dd8"/><text x="340" y="155" class="t h">Collectors (Go)</text><text x="340" y="172" class="t s">ingest · Deployment + HPA · 202</text>
+<line x1="340" y1="122" x2="340" y2="134" stroke="#888"/>
+<rect class="b" x="220" y="196" width="240" height="50" rx="8" stroke="#7a5bd0"/><text x="340" y="215" class="t h">Kafka (StatefulSet)</text><text x="340" y="233" class="t s">durable BUFFER · absorbs spikes</text>
+<line x1="340" y1="182" x2="340" y2="194" stroke="#888"/><text x="400" y="192" class="s" fill="#888">produce</text>
+<rect class="b" x="220" y="260" width="240" height="50" rx="8" stroke="#d86b5b"/><text x="340" y="279" class="t h">Processors (Java)</text><text x="340" y="297" class="t s">validate · enrich · dedup · HPA on LAG</text>
+<line x1="340" y1="246" x2="340" y2="258" stroke="#888"/><text x="400" y="256" class="s" fill="#888">consume</text>
+<rect class="b" x="150" y="330" width="230" height="46" rx="8" stroke="#3b7dd8"/><text x="265" y="349" class="t h">Results DB (Postgres)</text><text x="265" y="366" class="t s">processed_events · RDS on EKS</text>
+<rect class="b" x="410" y="330" width="220" height="46" rx="8" stroke="#1aa1a1"/><text x="520" y="349" class="t h">Aggregation CronJob</text><text x="520" y="366" class="t s">→ impressions / reach</text>
+<line x1="320" y1="310" x2="280" y2="328" stroke="#888"/><line x1="410" y1="353" x2="382" y2="353" stroke="#888"/>
+<rect class="b" x="40" y="396" width="280" height="44" rx="8" stroke="#888"/><text x="180" y="414" class="t h">node-agent (DaemonSet)</text><text x="180" y="431" class="t s">one per node · health/metrics</text>
+<rect class="b" x="360" y="396" width="280" height="44" rx="8" stroke="#888"/><text x="500" y="414" class="t h">measurement_aggregates</text><text x="500" y="431" class="t s">channel · daypart · impressions · reach</text>
+<line x1="520" y1="376" x2="500" y2="394" stroke="#888"/>
+<rect class="b" x="40" y="456" width="600" height="128" rx="8" stroke="#aaa"/>
+<text x="56" y="478" class="h">Data-pipeline + scale (what this proves)</text>
+<text x="56" y="500" class="s" font-size="11">Pipeline: ingest → durable buffer → process → aggregate → store; each stage scales independently</text>
+<text x="56" y="520" class="s" font-size="11">Kafka buffer decouples bursty ingest from steady processing = backpressure handling</text>
+<text x="56" y="540" class="s" font-size="11">Processors scale on CONSUMER LAG (KEDA), the right signal for streams · collectors scale on CPU</text>
+<text x="56" y="560" class="s" font-size="11">Every workload type: StatefulSet (Kafka,DB) · DaemonSet (agent) · Deployment+HPA · CronJob (batch)</text>
+<text x="56" y="578" class="s" font-size="11">Generic public measurement concepts · original fictional design · pairs with P4 RatingsBoard</text>
+</svg>

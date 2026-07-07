@@ -1,0 +1,11 @@
+global:
+  imageRegistry: "<ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com"
+config:
+  KAFKA_BOOTSTRAP: "<msk-bootstrap-brokers>:9092"
+  DB_HOST: "<rds-endpoint>.rds.amazonaws.com"
+infra:
+  inCluster: false           # use MSK + RDS
+ingress:
+  className: alb
+processor:
+  lagBasedScaling: true      # KEDA Kafka scaler on consumer lag
