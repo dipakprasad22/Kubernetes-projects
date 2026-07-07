@@ -4,10 +4,10 @@ Four production-shaped Kubernetes projects, each built **local-first on KIND** t
 
 | # | Project | Domain | Leans into | Status |
 |---|---------|--------|-----------|--------|
-| **P1** | [ShopKart](shopkart/) | E-Commerce | Microservices, Ingress routing, HPA, zero-downtime deploys | ✅ Built |
-| **P2** | [FinLedger](finledger/) | Finance | Security — RBAC, Pod Security, NetworkPolicy, Jobs/CronJobs | 🔜 Planned |
-| **P3** | [PanelPulse](panelpulse/) | Media Measurement (ingest) | Data pipelines — Kafka StatefulSet, DaemonSet, scaling | 🔜 Planned |
-| **P4** | [RatingsBoard](ratingsboard/) | Media Measurement (reporting) | Observability — Prometheus/Grafana, Helm, CronJobs, quotas | 🔜 Planned |
+| **P1** | [ShopKart](shopkart/) | E-Commerce | Microservices, Ingress routing, HPA, zero-downtime deploys |
+| **P2** | [FinLedger](finledger/) | Finance | Security — RBAC, Pod Security, NetworkPolicy, Jobs/CronJobs |
+| **P3** | [PanelPulse](panelpulse/) | Media Measurement (ingest) | Data pipelines — Kafka StatefulSet, DaemonSet, scaling |
+| **P4** | [RatingsBoard](ratingsboard/) | Media Measurement (reporting) | Observability — Prometheus/Grafana, Helm, CronJobs, quotas |
 
 P3 + P4 together form an end-to-end media-measurement system (ingest → process → report).
 
