@@ -2,8 +2,8 @@
 
 Four production-shaped Kubernetes projects, each built **local-first on KIND** then deployed to **Amazon EKS**, packaged with **Helm**. Together they exercise the full Kubernetes surface — workloads, networking, config/storage, scheduling/scaling, security, and observability — across realistic industry domains.
 
-| # | Project | Domain | Leans into | Status |
-|---|---------|--------|-----------|--------|
+| # | Project | Domain | Leans into |
+|---|---------|--------|-----------|
 | **P1** | [ShopKart](shopkart/) | E-Commerce | Microservices, Ingress routing, HPA, zero-downtime deploys |
 | **P2** | [FinLedger](finledger/) | Finance | Security — RBAC, Pod Security, NetworkPolicy, Jobs/CronJobs |
 | **P3** | [PanelPulse](panelpulse/) | Media Measurement (ingest) | Data pipelines — Kafka StatefulSet, DaemonSet, scaling |
