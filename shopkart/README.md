@@ -2,8 +2,6 @@
 
 A production-shaped e-commerce platform built as microservices on Kubernetes. Built **local-first on KIND**, then deployed to **Amazon EKS**, packaged with **Helm**. Demonstrates the microservices, networking, scaling, and operational patterns of a real online retail system.
 
-> Part of the [kubernetes-portfolio](../) — Project 1 of 4.
-
 ---
 
 ## What this project demonstrates
