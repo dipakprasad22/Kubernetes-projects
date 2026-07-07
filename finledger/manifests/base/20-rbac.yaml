@@ -1,0 +1,29 @@
+# A monitoring/audit ServiceAccount that can READ workloads in finledger only —
+# the least-privilege RBAC pattern. Namespaced Role + RoleBinding (NOT cluster-wide).
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: finledger-auditor, namespace: finledger }
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: { name: read-only, namespace: finledger }
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps", "batch"]
+    resources: ["deployments", "replicasets", "jobs", "cronjobs"]
+    verbs: ["get", "list", "watch"]
+  # NOTE: deliberately NO access to secrets — auditor cannot read credentials.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: { name: auditor-read-only, namespace: finledger }
+subjects:
+  - kind: ServiceAccount
+    name: finledger-auditor
+    namespace: finledger
+roleRef:
+  kind: Role
+  name: read-only
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,20 @@
+# EKS Ingress -> ALB with TLS (ACM cert). Internet-facing, target-type IP.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: finledger
+  namespace: finledger
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    # alb.ingress.kubernetes.io/certificate-arn: <ACM cert ARN>
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend: { service: { name: transaction-api, port: { number: 80 } } }

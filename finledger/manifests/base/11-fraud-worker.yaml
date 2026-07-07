@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraud-worker
+  namespace: finledger
+  labels: { app: fraud-worker }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: fraud-worker } }
+  template:
+    metadata: { labels: { app: fraud-worker } }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: fraud-worker
+          image: finledger/fraud-worker:1.0
+          # No ports — this is a worker. Liveness = process running (exec check).
+          livenessProbe:
+            exec: { command: ["sh", "-c", "pgrep -f app.jar > /dev/null"] }
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          volumeMounts: [{ name: tmp, mountPath: /tmp }]
+          resources:
+            requests: { cpu: "100m", memory: "256Mi" }
+            limits: { cpu: "500m", memory: "512Mi" }
+      volumes: [{ name: tmp, emptyDir: {} }]

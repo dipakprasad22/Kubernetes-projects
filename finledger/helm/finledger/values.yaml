@@ -1,0 +1,30 @@
+global:
+  namespace: finledger
+  imageRegistry: "finledger"     # ECR on EKS
+  imageTag: "1.0"
+
+config:
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "finledger"
+  DB_USER: "finledger"
+secrets:
+  DB_PASSWORD: "finledger_dev_password"   # override; Secrets Manager on EKS
+
+transactionApi:
+  replicas: 3
+  minReplicas: 3
+  maxReplicas: 8
+  minAvailable: 2          # PDB
+fraudWorker:
+  replicas: 2
+reconciliation:
+  schedule: "0 * * * *"
+
+security:
+  podSecurity: restricted   # enforced via namespace label
+  networkPolicy: true       # default-deny + allowlist
+  datatierInCluster: true   # false on EKS (use RDS)
+
+ingress:
+  className: nginx          # alb on EKS

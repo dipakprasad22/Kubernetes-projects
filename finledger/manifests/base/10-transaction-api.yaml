@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: transaction-api-sa
+  namespace: finledger
+  # On EKS: annotate with eks.amazonaws.com/role-arn for IRSA (read DB secret).
+automountServiceAccountToken: false   # this pod doesn't call the K8s API
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transaction-api
+  namespace: finledger
+  labels: { app: transaction-api }
+spec:
+  replicas: 3
+  selector: { matchLabels: { app: transaction-api } }
+  strategy: { type: RollingUpdate, rollingUpdate: { maxUnavailable: 0, maxSurge: 1 } }
+  template:
+    metadata: { labels: { app: transaction-api } }
+    spec:
+      serviceAccountName: transaction-api-sa
+      # Pod-level hardening (required for "restricted" PSS)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: transaction-api
+          image: finledger/transaction-api:1.0
+          ports: [{ containerPort: 8080 }]
+          envFrom: [{ configMapRef: { name: finledger-config } }]
+          env:
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: finledger-secrets, key: DB_PASSWORD } }
+          # JVM startup is slow → startup probe gates liveness (the K5 fix)
+          startupProbe:
+            httpGet: { path: /actuator/health, port: 8080 }
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet: { path: /actuator/health, port: 8080 }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /actuator/health, port: 8080 }
+            periodSeconds: 10
+          # Container-level hardening
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }        # writable tmp (read-only root FS)
+          resources:
+            requests: { cpu: "250m", memory: "512Mi" }
+            limits: { cpu: "1", memory: "1Gi" }
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata: { name: transaction-api, namespace: finledger }
+spec:
+  selector: { app: transaction-api }
+  ports: [{ port: 80, targetPort: 8080 }]
+  type: ClusterIP
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: { name: transaction-api-pdb, namespace: finledger }
+spec:
+  minAvailable: 2          # keep at least 2 of 3 during node drains
+  selector: { matchLabels: { app: transaction-api } }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: transaction-api, namespace: finledger }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: transaction-api }
+  minReplicas: 3
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 65 } }

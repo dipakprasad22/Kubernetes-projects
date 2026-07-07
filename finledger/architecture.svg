@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="560" viewBox="0 0 680 560" font-family="system-ui,Arial" font-size="12">
+<style>.b{fill:#fff;stroke-width:1.2}.t{text-anchor:middle}.h{font-weight:600}</style>
+<rect width="680" height="560" fill="#fafafa"/>
+<text x="340" y="26" class="t h" font-size="15">FinLedger — Finance Transaction Platform on Kubernetes</text>
+<rect class="b" x="260" y="44" width="160" height="30" rx="6" stroke="#2a9d5c"/><text x="340" y="63" class="t">Clients (mTLS/HTTPS)</text>
+<rect class="b" x="230" y="88" width="220" height="36" rx="8" stroke="#e0a020"/><text x="340" y="110" class="t h">Ingress (ALB + TLS on EKS)</text>
+<line x1="340" y1="74" x2="340" y2="86" stroke="#888"/>
+<rect class="b" x="200" y="140" width="280" height="50" rx="8" stroke="#3b7dd8"/><text x="340" y="160" class="t h">Transaction API (Spring Boot)</text><text x="340" y="178" class="t" font-size="10">validate · @Transactional · 3 replicas + PDB</text>
+<line x1="340" y1="124" x2="340" y2="138" stroke="#888"/>
+<rect class="b" x="50" y="216" width="250" height="58" rx="8" stroke="#7a5bd0"/><text x="175" y="238" class="t h">Ledger (double-entry)</text><text x="175" y="256" class="t" font-size="10">debit==credit · append-only</text>
+<rect class="b" x="380" y="216" width="250" height="58" rx="8" stroke="#d86b5b"/><text x="505" y="238" class="t h">Fraud Worker (no web port)</text><text x="505" y="256" class="t" font-size="10">async event consumer</text>
+<line x1="300" y1="190" x2="200" y2="214" stroke="#888"/><line x1="380" y1="190" x2="480" y2="214" stroke="#888"/>
+<rect class="b" x="150" y="306" width="240" height="52" rx="8" stroke="#3b7dd8"/><text x="270" y="326" class="t h">PostgreSQL ledger store</text><text x="270" y="344" class="t" font-size="10">StatefulSet / RDS Multi-AZ</text>
+<rect class="b" x="410" y="306" width="200" height="52" rx="8" stroke="#1aa1a1"/><text x="510" y="326" class="t h">Reconciliation CronJob</text><text x="510" y="344" class="t" font-size="10">scheduled integrity check</text>
+<line x1="175" y1="274" x2="240" y2="304" stroke="#888"/><line x1="505" y1="274" x2="350" y2="306" stroke="#888"/><line x1="410" y1="332" x2="392" y2="332" stroke="#888"/>
+<rect class="b" x="40" y="384" width="600" height="160" rx="8" stroke="#d04545"/>
+<text x="56" y="406" class="h" fill="#d04545">Security &amp; correctness controls (the lean)</text>
+<text x="56" y="430" font-size="11">RBAC: least-privilege SAs · auditor read-only, NO secret access (IRSA on EKS)</text>
+<text x="56" y="450" font-size="11">Pod Security "restricted" enforced per namespace · securityContext: non-root, drop caps, read-only FS</text>
+<text x="56" y="470" font-size="11">NetworkPolicy: DEFAULT-DENY ingress+egress, allowlist only (zero-trust) + DNS egress</text>
+<text x="56" y="490" font-size="11">Secrets: KMS etcd encryption + Secrets Manager (not stored keys)</text>
+<text x="56" y="510" font-size="11">@Transactional atomicity (all-or-nothing money moves) · PDB (availability) · Jobs/CronJobs (batch)</text>
+<text x="56" y="530" font-size="11">Defense in depth: access + workload + network + data + durability — no single control alone</text>
+</svg>

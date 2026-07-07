@@ -1,0 +1,6 @@
+apiVersion: v2
+name: finledger
+description: FinLedger finance transaction platform (security-hardened)
+type: application
+version: 1.0.0
+appVersion: "1.0"
