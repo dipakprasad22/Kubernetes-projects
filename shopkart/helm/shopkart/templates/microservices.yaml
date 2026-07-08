@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: {{ $name }}
-          image: "{{ $.Values.global.imageRegistry }}/{{ $name }}:{{ $.Values.global.imageTag }}"
+          image: "{{ $.Values.global.imageRegistry }}/shopkart/{{ $name }}:{{ $.Values.global.imageTag }}"
           ports: [{ containerPort: {{ $svc.port }} }]
           envFrom: [{ configMapRef: { name: shopkart-config } }]
           env:

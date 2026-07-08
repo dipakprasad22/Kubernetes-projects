@@ -1,12 +1,12 @@
 # EKS overrides: ECR images, managed data tier (RDS/ElastiCache), ALB ingress.
 global:
-  imageRegistry: "<ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com"
-  imageTag: "1.0"
+  imageRegistry: "AWS_ID.dkr.ecr.us-east-1.amazonaws.com"
+  imageTag: "1.2"
 ingress:
   className: alb
   alb: true
 datatier:
-  inCluster: false          # use RDS/ElastiCache, not in-cluster StatefulSets
+  inCluster: true          # use RDS/ElastiCache, not in-cluster StatefulSets
 config:
-  DB_HOST: "<rds-endpoint>.ap-south-1.rds.amazonaws.com"
-  REDIS_HOST: "<elasticache-endpoint>"
+  DB_HOST: "DB_HOST_NAME.us-east-1.rds.amazonaws.com"
+  REDIS_HOST: "REDIS_HOST_NAME.serverless.use1.cache.amazonaws.com"

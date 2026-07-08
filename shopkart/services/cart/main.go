@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -34,6 +35,10 @@ func main() {
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     env("REDIS_HOST", "redis") + ":" + env("REDIS_PORT", "6379"),
 		Password: env("REDIS_PASSWORD", ""),
+		TLSConfig: &tls.Config{
+			MinVersion:         tls.VersionTLS12,
+			InsecureSkipVerify: true,
+		},
 	})
 
 	mux := http.NewServeMux()

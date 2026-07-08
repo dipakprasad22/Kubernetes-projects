@@ -12,7 +12,7 @@ ACCOUNT=$(aws sts get-caller-identity --query Account --output text); REGION=ap-
 aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT.dkr.ecr.$REGION.amazonaws.com
 for svc in gateway catalog cart orders users web; do
   aws ecr create-repository --repository-name shopkart/$svc --region $REGION 2>/dev/null || true
-  docker build -t $ACCOUNT.dkr.ecr.$REGION.amazonaws.com/shopkart/$svc:1.0 \
+  docker build --platform linux/amd64 -t $ACCOUNT.dkr.ecr.$REGION.amazonaws.com/shopkart/$svc:1.0 \
     $( [ "$svc" = web ] && echo web || echo services/$svc )
   docker push $ACCOUNT.dkr.ecr.$REGION.amazonaws.com/shopkart/$svc:1.0
 done
@@ -21,7 +21,7 @@ done
 ## 2. Create the cluster (with OIDC for IRSA)
 ```bash
 eksctl create cluster --name shopkart --region $REGION \
-  --nodegroup-name ng-1 --node-type t3.medium --nodes 2 --nodes-min 2 --nodes-max 4 \
+  --nodegroup-name ng-1 --node-type t2.medium --nodes 2 --nodes-min 2 --nodes-max 4 \
   --managed --with-oidc
 ```
 
@@ -31,7 +31,7 @@ eksctl create cluster --name shopkart --region $REGION \
 helm repo add eks https://aws.github.io/eks-charts && helm repo update
 helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   -n kube-system --set clusterName=shopkart \
-  --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
+  --set serviceAccount.create=true --set serviceAccount.name=aws-load-balancer-controller
 ```
 
 ## 4. Set up the data tier (RDS) + IRSA

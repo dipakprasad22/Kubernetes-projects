@@ -5,11 +5,11 @@ metadata:
   name: shopkart-config
   namespace: shopkart
 data:
-  DB_HOST: "postgres"
+  DB_HOST: "DB_HOST_NAME.us-east-1.rds.amazonaws.com"
   DB_PORT: "5432"
-  DB_USER: "shopkart"
+  DB_USER: "postgres"
   DB_SSLMODE: "disable"
-  REDIS_HOST: "redis"
+  REDIS_HOST: "REDIS_HOST_NAME.serverless.use1.cache.amazonaws.com"
   REDIS_PORT: "6379"
   CATALOG_URL: "http://catalog"
   CART_URL: "http://cart"
@@ -26,4 +26,4 @@ metadata:
   namespace: shopkart
 type: Opaque
 stringData:
-  DB_PASSWORD: "shopkart_dev_password"   # dev only; real secret injected per-env
+  DB_PASSWORD: "DB_PASSWORD"   # dev only; real secret injected per-env

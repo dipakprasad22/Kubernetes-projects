@@ -1,19 +1,19 @@
 # ShopKart Helm values — override per environment (values-kind.yaml / values-eks.yaml).
 global:
   namespace: shopkart
-  imageRegistry: "shopkart"        # local; set to <acct>.dkr.ecr.<region>.amazonaws.com on EKS
+  imageRegistry: "AWS_ID.dkr.ecr.us-east-1.amazonaws.com"        # local; set to <acct>.dkr.ecr.<region>.amazonaws.com on EKS
   imageTag: "1.0"
 
 config:
-  DB_HOST: "postgres"
+  DB_HOST: "DB_HOST_NAME.us-east-1.rds.amazonaws.com"
   DB_PORT: "5432"
-  DB_USER: "shopkart"
-  DB_SSLMODE: "disable"
-  REDIS_HOST: "redis"
+  DB_USER: "postgres"
+  DB_SSLMODE: "require"
+  REDIS_HOST: "REDIS_HOST_NAME.serverless.use1.cache.amazonaws.com"
   REDIS_PORT: "6379"
 
 secrets:
-  DB_PASSWORD: "shopkart_dev_password"   # override; on EKS source from Secrets Manager
+  DB_PASSWORD: "DB_PASSWORD"   # override; on EKS source from Secrets Manager
 
 # Each microservice: replicas, port, autoscaling bounds, db name
 services:
@@ -22,10 +22,8 @@ services:
   cart:    { port: 8080, replicas: 2, minReplicas: 2, maxReplicas: 8 }
   orders:  { port: 8080, replicas: 2, minReplicas: 2, maxReplicas: 8, dbName: orders }
   users:   { port: 8080, replicas: 2, minReplicas: 2, maxReplicas: 8, dbName: users }
+  web:     { port: 3000, replicas: 2, minReplicas: 2, maxReplicas: 8 }
 
-web:
-  port: 3000
-  replicas: 2
 
 ingress:
   enabled: true
@@ -33,7 +31,7 @@ ingress:
   alb: false                # true on EKS to add ALB annotations
 
 datatier:
-  inCluster: true           # true on KIND (Postgres/Redis StatefulSets); false on EKS (RDS/ElastiCache)
+  inCluster: false           # true on KIND (Postgres/Redis StatefulSets); false on EKS (RDS/ElastiCache)
 
 resources:
   requests: { cpu: "50m", memory: "64Mi" }
